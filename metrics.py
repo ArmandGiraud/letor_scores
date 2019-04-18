@@ -91,7 +91,7 @@ def score(y_pred, y_true, y_score, k, method):
     """y_pred: documents id returned by the system sorted from most relevant to least relevant
        y_true: documents id scored by humans sorted from most relevant to least relevant
        y_scores: human scores of documents returned by the system (o if not scored)
-       k: maximum rank to eb considered
+       k: maximum rank to be considered
        method: one of ["precision", "recall", "dcg", "mrr", "all"]"""
 
     if method not in ["precision", "recall", "dcg", "mrr", "all"]:

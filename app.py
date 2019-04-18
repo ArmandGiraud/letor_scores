@@ -73,8 +73,11 @@ def create_app():
 
   @app.route('/')
   def hello():
-    return 'suggest api'
+    return 'scoring api'
 
   add_scoring(app)
 
   return app
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')

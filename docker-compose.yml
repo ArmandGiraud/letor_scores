@@ -1,0 +1,7 @@
+version: '2.3'
+services:
+  flask:
+    build: .
+    command: gunicorn --bind 0.0.0.0:4545 app:create_app()
+    ports:
+      - '20000:20000'
