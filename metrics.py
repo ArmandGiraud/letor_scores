@@ -104,7 +104,7 @@ def score(y_pred, y_true, y_score, k, method):
     elif method == "dcg":
         return discounted_cumulative_gain(y_score, k)
     elif method == "mrr":
-        mean_reciprocal_rank(y_pred, y_true, k)
+        return mean_reciprocal_rank(y_pred, y_true)
     elif method == "all":
         return {
             "precision" : find_precision_k(y_pred, y_true, k),
