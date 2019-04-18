@@ -22,7 +22,7 @@ params = {
     "k": 3 # k (integer =< length(y_pred)) maximum result to be considered 
 }
 
-r = requests.post("http://164.131.131.250:4545/api/score", json = params)
+r = requests.post("0.0.0.0:4545/api/score", json = params)
 r
 >>> 200
 
