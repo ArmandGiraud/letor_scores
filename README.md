@@ -17,7 +17,7 @@ import requests
 params = {
     "y_pred" : ["a", "b", "c", "w", "k","e"], # y_pred (array): list of documents id predicted by the system
     "y_true" : ["a", "b", "c","e"], # y_true(array): documents id scored by humans sorted from most relevant to least relevant
-    "y_score" : [2,5,9], # y_scores (array of integers): human scores of documents returned by the system (o if not scored)
+    "y_score" : [5, 5, 3, 2, 2, 1], # y_scores (array of integers): human scores of documents returned by the system (o if not scored)
     "method" : "all", # one of ["precision", "recall", "dcg", "mrr", "all"]
     "k": 3 # k (integer =< length(y_pred)) maximum result to be considered 
 }
