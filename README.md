@@ -4,7 +4,10 @@ a flask minimal api to score a ranking system against human relevance scores
 
 
 ## Usage
-
+### Deploy
+```bash
+docker-compose up -d
+```
 ### Endpoint /api/score
 
 the score endpoint enables to score a single request, to evaluate the system on the list of requests, just compute the average of the returned scores 
