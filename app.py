@@ -69,11 +69,22 @@ def add_scoring(app):
 def create_app():
   app = Flask(__name__)
   app.config['JSON_AS_ASCII'] = False
-  app.logger.info("Flask app started ")
+  app.logger.info("Flask app started")
 
   @app.route('/')
   def hello():
-    return 'scoring api'
+    stringr = """
+    <h3> List of Apis:</h3>
+    <ul>
+        <li>
+            <a href="/api/score">Ranking Scores Api</a>
+        </li>
+        <li>
+            <a href="/api/score>Not Implemented</a>
+        </li>
+    </ul>
+                """
+    return stringr
 
   add_scoring(app)
 

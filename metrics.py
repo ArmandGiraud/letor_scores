@@ -41,7 +41,7 @@ def mean_reciprocal_rank(y_pred, y_true):
         y_pred: list of documents id predicted by the system
         y_true: list of documents expected by human evaluator
     """
-    res = 0
+    res = 100 # if document not found give a fictional rank 100 
     for i, pred in enumerate(y_pred):
         if pred in y_true:
             res = 1/(i + 1)
