@@ -26,15 +26,15 @@ def find_precision_k(y_pred, y_true, k):
     Returns:
         precision   - a score
     """
+    if y_pred == []:
+        return 0
     
     if k > len(y_pred):
         k = len(y_pred)
-    precision = 0.0
-    relevant = 0.0
-    for i, value in enumerate(y_true[:k]):
-        if value == y_pred[i]:
-            relevant += 1.0
-    precision = relevant/k
+    
+    y_pred = y_pred[:k]
+
+    precision = len(set(y_pred).intersection(y_true))/len(y_pred)
 
     return precision
 
@@ -43,7 +43,10 @@ def mean_reciprocal_rank(y_pred, y_true):
         y_pred: list of documents id predicted by the system
         y_true: list of documents expected by human evaluator
     """
-    res = len(y_pred) + 1 # if document not found give the rank of the last document + 1
+    if y_pred == []: # return 10 if document is empty 
+        return 1/100
+
+    res = 1/100 # if document not found give 1/100
     for i, pred in enumerate(y_pred):
         if pred in y_true:
             res = 1/(i + 1)
@@ -54,6 +57,8 @@ def find_recall_k(y_pred, y_true, k):
     """recall: qelle proportion de documents pertinents en regardant seulement les k premiers documents.
     y_pred: list of documents id predicted by the system
     y_true: list of documents expected by human evaluator"""
+    if y_pred == []:
+        return 0
     res = 0
     nb_relevant = len(y_true)
     if k > len(y_pred):
@@ -67,6 +72,8 @@ def discounted_cumulative_gain(y_score, y_true, y_pred, k):
        k = maximum index to be scored
 
        /!\ to be valid, dcg should have results lists of same length bbetween requests"""
+    if y_pred == []:
+        return 0
     if k > len(y_pred):
         k = len(y_pred)
     
@@ -83,7 +90,7 @@ def discounted_cumulative_gain(y_score, y_true, y_pred, k):
         for i, pred in enumerate(y_scoring[:k]):
             i+=1
             dcg.append(pred/(np.log2(i)+1))
-        return np.mean(dcg)
+        return np.sum(dcg)
     # compute Ideal DCG
     # ideal DCG: the best score that could have been obtained given the relevant document list
     # i. e. : the most relevant documents, ordered by relevance.
@@ -99,9 +106,8 @@ def discounted_cumulative_gain(y_score, y_true, y_pred, k):
         ideal_scores.append(score)
 
     ideal_scores = sorted(ideal_scores, reverse=True)
-    ideal_dcg = compute_dcg(ideal_scores, k)
-    
 
+    ideal_dcg = compute_dcg(ideal_scores, k)
     return dcg/ideal_dcg
 
 def multi_score(y_pred_id, y_true_id, y_pred_scores):
@@ -151,24 +157,180 @@ def score(y_pred, y_true, y_score, k, method):
 
 
 if __name__ == "__main__":
-    # mean reciprocal_rank
-    assert mean_reciprocal_rank([1, 2, 3], [1]) == 1
-    assert mean_reciprocal_rank([1, 2, 3], [4]) == 0
-    assert mean_reciprocal_rank([1, 2, 3], [2]) == 1/2
-    assert mean_reciprocal_rank([1, 2, 3], [1, 2]) == 1
-    assert mean_reciprocal_rank([1, 2, 3], [4, 5, 6]) == 0
+    # no prediction should result in 0
 
-    # recall at k:
+    y_true = ["a","b","c","d"]
+    y_pred = []
+    y_score = {"a": 4, 
+            "b": 2,
+            "c": 2,
+            "d": 1}
+    k = 3
+
+    assert discounted_cumulative_gain(y_score, y_true, y_pred, k) == 0
+    assert find_precision_k(y_pred, y_true, k) == 0
+    assert find_recall_k(y_pred, y_true, k) == 0
+    assert mean_reciprocal_rank(y_pred, y_true) == 0.01
+
+    # no relevant document in prediction should result in 0
+
+    y_true = ["a","b","c","d"]
+    y_pred = ["e","f","g","h"]
+    y_score = {"a": 4, 
+            "b": 2,
+            "c": 2,
+            "d": 1}
+    k = 3
+    assert discounted_cumulative_gain(y_score, y_true, y_pred, k) == 0
+    assert find_precision_k(y_pred, y_true, k) == 0
+    assert find_recall_k(y_pred, y_true, k) == 0
+    assert mean_reciprocal_rank(y_pred, y_true) == 0.01
+
+    # more documents than k should have identical results
+
+    y_true = ["a","b","c","d"]
+    y_pred = ["a","f","c","h"]
+    y_pred_long = ["a","f","c","h", "d", "b"]
+
+    y_score = {"a": 4, 
+            "b": 2,
+            "c": 2,
+            "d": 1}
+
+    k = 3
+    assert discounted_cumulative_gain(y_score, y_true, y_pred, k) == discounted_cumulative_gain(y_score, y_true, y_pred_long, k)
+    assert find_precision_k(y_pred, y_true, k) == find_precision_k(y_pred_long, y_true, k)
+    assert find_recall_k(y_pred, y_true, k) == find_recall_k(y_pred_long, y_true, k)
+    assert mean_reciprocal_rank(y_pred, y_true) == mean_reciprocal_rank(y_pred_long, y_true)
+
+    # assert better ranking give better scores...
+
+    y_true = ["a","b","c","d"]
+    y_pred_good = ["a","b","d"]
+    y_pred_bad = ["e","a","b","d"]
+
+    y_score = {"a": 4, 
+            "b": 2,
+            "c": 2,
+            "d": 1}
+
+    assert discounted_cumulative_gain(y_score, y_true, y_pred_good, k) > discounted_cumulative_gain(y_score, y_true, y_pred_bad, k)
+    assert find_precision_k(y_pred_good, y_true, k) > find_precision_k(y_pred_bad, y_true, k)
+    assert find_recall_k(y_pred_good, y_true, k) > find_recall_k(y_pred_bad, y_true, k)
+    assert mean_reciprocal_rank(y_pred_good, y_true) > mean_reciprocal_rank(y_pred_bad, y_true)
+
+    # assert too high k causes no error
+
+    k = 5
+    assert discounted_cumulative_gain(y_score, y_true, y_pred_good, k)
+    assert find_precision_k(y_pred_good, y_true, k) 
+    assert find_recall_k(y_pred_good, y_true, k)
+    assert mean_reciprocal_rank(y_pred_good, y_true)
+
+    # assert ideal DCG is computed correctly: normalization makes effect
+
+    y_true = ["a"] # one good result with value 1 should yield
+    y_pred = ["a","b","d"]
+
+    y_score_high = {
+        "a": 5,
+        "e": 8 # simultaneously assert e has no impact
+    }
+    y_score_low = {
+        "a": 1
+    }
+    k = 3
+
+    import numpy as np
+    A = discounted_cumulative_gain(y_score_high, y_true, y_pred, k)
+    B = discounted_cumulative_gain(y_score_low, y_true, y_pred, k)
+    np.testing.assert_almost_equal(A, B) # 
+
+    # assert DCG relative scores 
+
+    y_true = ["a", "b"] # one good result with value 1 should yield
+    y_pred = ["a","b"]
+
+    y_score_high = {
+        "a": 5,
+        "b": 3,
+        "c": 5
+    }
+    y_score_low = {
+        "a": 3,
+        "b": 2,
+        "c": 5
+    }
+    k = 3
+
+    A = discounted_cumulative_gain(y_score_high, y_true, y_pred, k)
+    B = discounted_cumulative_gain(y_score_low, y_true, y_pred, k)
+    assert A == B == 1
+
+    # assert perfect results:
+    #perfect recall: all relevant documents found
+    k = 5
+    y_true = ["a", "b"] # one good result with value 1 should yield
+    y_pred = ["a","e", "f", "g", "b"]
+
+    assert find_recall_k(y_pred, y_true, 5) == 1
+    assert find_precision_k(y_pred, y_true, 5) != 1
+
+    # former assertions still valid
     assert find_recall_k([1, 2, 3], [1], k = 1) == 1
     assert find_recall_k([1, 2, 3], [9], k = 1) == 0
     assert find_recall_k([1, 2, 3], [1], k = 3) == 1
     assert find_recall_k([1, 2, 3], [3, 1], k = 1) == 1/2
     assert find_recall_k([1, 2, 3], [3, 1, 4], k = 2) == 1/3
 
-    # dcg
-    assert discounted_cumulative_gain([0,0,0,0], 10) == 0.0
-    assert discounted_cumulative_gain([1,0,0,0], 10) == 0.25
-    assert discounted_cumulative_gain([0,1,0,0], 10) == 0.125
+    # perfect precision:
+    k = 2
+    y_true = ["a","e", "f", "g", "b"] # one good result with value 1 should yield
+    y_pred = ["a", "g"]
+
+    assert find_precision_k(y_pred, y_true, 5) == 1
+    assert find_recall_k(y_pred, y_true, 5) != 1
+
+    assert find_precision_k([1,2,3], [1], 3) == 1/3
+    assert find_precision_k([1], [1], 3) == 1
+    assert find_precision_k([1, 2], [2, 1], 3) == find_precision_k([2, 1], [1, 2], 3) == 1
+
+    # assert dcg  is not messed by additional results
+
+    y_true = ["a", "w"] # one good result with value 1 should yield
+    y_pred_good = ["d", "a","w"]
+    y_pred_bad = ["d","w","a"]
+
+    y_score = {"a": 5, "w":3}
+
+    assert discounted_cumulative_gain(y_score, y_true, y_pred_good, k) > discounted_cumulative_gain(y_score, y_true, y_pred_bad, k)
+
+
+    y_true = ["a"] # one good result on first place should be ideal
+    y_pred = ["a","b","d"]
+
+    y_score = {"a": 5}
+    assert discounted_cumulative_gain(y_score, y_true, y_pred, k) == 1
+
+
+    # assert y_true is sorted
+
+    y_true_unsorted = ['a', "c", "b"]
+    y_true_sorted = ['a', "b", "c"]
+    y_pred = ["a", "b", 'w']
+    y_score = {"a": 3, 
+            "b": 2,
+            "c": 1}
+
+    assert discounted_cumulative_gain(y_score, y_true_sorted, y_pred, k) == discounted_cumulative_gain(y_score, y_true_unsorted, y_pred, k)
+
+    # mean reciprocal_rank
+    assert mean_reciprocal_rank([1, 2, 3], [1]) == 1
+    assert mean_reciprocal_rank([1, 2, 3], [4]) == 0.01
+    assert mean_reciprocal_rank([1, 2, 3], [2]) == 1/2
+    assert mean_reciprocal_rank([1, 2, 3], [1, 2]) == 1
+    assert mean_reciprocal_rank([1, 2, 3], [4, 5, 6]) == 0.01
+
 
     # Example:
     # pour la requête "solde de tout compte" on obtient les docs y_pred = [1, 2, 3] les docs pertinents sont dans l'ordre y_true = [7, 2, 3], 
