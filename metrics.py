@@ -57,7 +57,7 @@ def find_recall_k(y_pred, y_true, k):
     res = 0
     nb_relevant = len(y_true)
     if k > len(y_pred):
-        k = y_pred
+        k = len(y_pred)
         
     relevant_found = len(set(y_pred[:k]).intersection(y_true))
     return relevant_found/nb_relevant
@@ -69,6 +69,7 @@ def discounted_cumulative_gain(y_score, y_true, y_pred, k):
        /!\ to be valid, dcg should have results lists of same length bbetween requests"""
     if k > len(y_pred):
         k = len(y_pred)
+    
     y_scoring = []
     for y in y_pred:
         score = y_score.get(y)
