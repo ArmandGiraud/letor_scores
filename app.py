@@ -29,8 +29,8 @@ def test_input_validity(y_pred, y_true, y_score, k, method):
         return "y_pred, and y_true should be arrays of doc ids\
              y_score should be a mapping of y_pred to human scores"
 
-    if not all([type(i) == int for i in y_score]):
-        return "y_score can only contains integers"
+    if not all([type(i) == int for i in y_score.values()]):
+        return "y_score values can only contains integers"
 
     if type(k) != int:
         return "k should be an integer preferaly k < to y_pred"
