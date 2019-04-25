@@ -16,7 +16,7 @@ import requests
 
 params = {
     "y_pred" : ["a", "b", "c", "w", "k","e"], # y_pred (array): list of documents id predicted by the system
-    "y_true" : ["a", "b", "c","e"], # y_true (array): documents id scored by humans sorted from most relevant to least relevant
+    "y_true" : ["a", "b", "c", "e"], # y_true (array): documents id scored by humans sorted from most relevant to least relevant
     "y_score" : {
         "a":5,
         "b":3,
@@ -32,7 +32,7 @@ r
 >>> 200
 
 r.json()
->>> {'dcg': 2.660558421703625, 'mrr': 1.0, 'precision': 1.0, 'recall': 0.75}
+>>> {'dcg': 0.31259247142834, 'mrr': 0.5, 'precision': 0.6666666666666666, 'recall': 0.5}
 
 ```
 

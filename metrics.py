@@ -27,6 +27,8 @@ def find_precision_k(y_pred, y_true, k):
         precision   - a score
     """
     
+    if k > len(y_pred):
+        k = len(y_pred)
     precision = 0.0
     relevant = 0.0
     for i, value in enumerate(y_true[:k]):
@@ -65,6 +67,8 @@ def discounted_cumulative_gain(y_score, y_true, y_pred, k):
        k = maximum index to be scored
 
        /!\ to be valid, dcg should have results lists of same length bbetween requests"""
+    if k > len(y_pred):
+        k = len(y_pred)
     y_scoring = []
     for y in y_pred:
         score = y_score.get(y)
