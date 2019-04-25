@@ -24,20 +24,22 @@ class InvalidUsage(Exception):
         return rv
 
 def test_input_validity(y_pred, y_true, y_score, k, method):
-    has_only_lists = any([type(y_pred) != list, type(y_true) != list, type(y_score) != list])
+    has_only_lists = any([type(y_pred) != list, type(y_true) != list, type(y_score) != dict])
     if has_only_lists:
-        return "y_pred, y_true and  y_score should be arrays of integers"
+        return "y_pred, and y_true should be arrays of doc ids\
+             y_score should be a mapping of y_pred to human scores"
 
     if not all([type(i) == int for i in y_score]):
         return "y_score can only contains integers"
 
     if type(k) != int:
-        return "k should be integer"
+        return "k should be an integer preferaly k < to y_pred"
 
-    if k > len(y_pred) or k > len(y_true):
-        return "k cannot be longer than y_pred"
     if method not in ["precision", "recall", "dcg", "mrr", "all"]:
         return 'method should be one of ["precision", "recall", "dcg", "mrr", "all"]'
+    if y_pred == []:
+        return "empty prediction array, no score to be given"
+    
     return False
 
 

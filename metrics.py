@@ -41,7 +41,7 @@ def mean_reciprocal_rank(y_pred, y_true):
         y_pred: list of documents id predicted by the system
         y_true: list of documents expected by human evaluator
     """
-    res = 100 # if document not found give a fictional rank 100 
+    res = len(y_pred) + 1 # if document not found give the rank of the last document + 1
     for i, pred in enumerate(y_pred):
         if pred in y_true:
             res = 1/(i + 1)
@@ -55,20 +55,48 @@ def find_recall_k(y_pred, y_true, k):
     res = 0
     nb_relevant = len(y_true)
     if k > len(y_pred):
-        raise ValueError("k: longer than nb of results in y_pred")
+        k = y_pred
         
     relevant_found = len(set(y_pred[:k]).intersection(y_true))
     return relevant_found/nb_relevant
 
-def discounted_cumulative_gain(y_pred, k):
-    """y_pred is the list of relevance scores of results (0 if not scored by humans)
+def discounted_cumulative_gain(y_score, y_true, y_pred, k):
+    """y_score is a dictionnary {"doc_id":"score"} of documents assigned as relevant y humans with the associated scores
        k = maximum index to be scored
-       /!\ to be valid, dcg should have results lists of same length"""
-    res = []
-    for i, pred in enumerate(y_pred[:k]):
-        i+=1
-        res.append(pred/(np.log2(i)+1))
-    return np.mean(res)
+
+       /!\ to be valid, dcg should have results lists of same length bbetween requests"""
+    y_scoring = []
+    for y in y_pred:
+        score = y_score.get(y)
+        if score is None: # if the predicted document is not in the array of humanly scored documents
+            score = 0
+        y_scoring.append(score)
+    
+    # compute dcg
+    def compute_dcg(y_scoring, k):
+        dcg = []
+        for i, pred in enumerate(y_scoring[:k]):
+            i+=1
+            dcg.append(pred/(np.log2(i)+1))
+        return np.mean(dcg)
+    # compute Ideal DCG
+    # ideal DCG: the best score that could have been obtained given the relevant document list
+    # i. e. : the most relevant documents, ordered by relevance.
+
+    dcg = compute_dcg(y_scoring, k)
+
+    ideal_scores = []
+    for i in y_true:
+        score = y_score.get(i)
+        if not score: # if we don't have a score for y true
+            raise ValueError("the true document does not have score in y_score")
+        ideal_scores.append(score)
+
+    ideal_scores = sorted(ideal_scores, reverse=True)
+    ideal_dcg = compute_dcg(ideal_scores, k)
+    
+
+    return dcg/ideal_dcg
 
 def multi_score(y_pred_id, y_true_id, y_pred_scores):
     print("recall: at 1", find_recall_k(y_pred_id, y_true_id, min(1, len(y_pred_id)))) # min make sure the prediction array is not shorter than the expected results...
