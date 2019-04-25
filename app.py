@@ -37,8 +37,15 @@ def test_input_validity(y_pred, y_true, y_score, k, method):
 
     if method not in ["precision", "recall", "dcg", "mrr", "all"]:
         return 'method should be one of ["precision", "recall", "dcg", "mrr", "all"]'
+
     if y_pred == []:
         return "empty prediction array, no score to be given"
+    
+    for val in y_true:
+        score = y_score.get(val)
+        if score is None:
+            return "document {} of y_trtue must have a score in y_score"
+
     
     return False
 
