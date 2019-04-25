@@ -89,6 +89,7 @@ def discounted_cumulative_gain(y_score, y_true, y_pred, k):
     for i in y_true:
         score = y_score.get(i)
         if not score: # if we don't have a score for y true
+            y_score[i]
             raise ValueError("the true document does not have score in y_score")
         ideal_scores.append(score)
 
@@ -137,7 +138,7 @@ def score(y_pred, y_true, y_score, k, method):
         return {
             "precision" : find_precision_k(y_pred, y_true, k),
             "recall" : find_recall_k(y_pred, y_true, k),
-            "dcg" : discounted_cumulative_gain(y_score, y_pred, y_true, k),
+            "dcg" : discounted_cumulative_gain(y_score, y_true, y_pred, k),
             "mrr": mean_reciprocal_rank(y_pred, y_true)
         }
     else:

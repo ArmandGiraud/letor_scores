@@ -44,9 +44,8 @@ def test_input_validity(y_pred, y_true, y_score, k, method):
     for val in y_true:
         score = y_score.get(val)
         if score is None:
-            return "document {} of y_trtue must have a score in y_score"
-
-    
+            return "document {} in y_true must have an associated score in y_score".format(str(val))
+            
     return False
 
 
