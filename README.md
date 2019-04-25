@@ -6,7 +6,7 @@ a flask minimal api to score a ranking system against human relevance scores
 ## Usage
 ### Deploy
 ```bash
-docker-compose up -d
+sudo docker-compose up --build -d
 ```
 ### Endpoint /api/score
 

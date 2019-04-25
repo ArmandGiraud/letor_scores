@@ -137,7 +137,7 @@ def score(y_pred, y_true, y_score, k, method):
         return {
             "precision" : find_precision_k(y_pred, y_true, k),
             "recall" : find_recall_k(y_pred, y_true, k),
-            "dcg" : discounted_cumulative_gain(y_score, k),
+            "dcg" : discounted_cumulative_gain(y_score, y_pred, y_true, k),
             "mrr": mean_reciprocal_rank(y_pred, y_true)
         }
     else:
